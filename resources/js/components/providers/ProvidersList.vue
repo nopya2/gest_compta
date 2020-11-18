@@ -4,6 +4,14 @@
             <div class="card">
                 <div class="card-header">
                     <h3 class="card-title">Liste des fournisseurs</h3>
+                    <div class="card-tools">
+                        <button type="button" class="btn btn-primary btn-sm" @click="exportProviders()">
+                            <i class="fas fa-file-excel mr-1"></i> Export Excel
+                        </button>
+                        <button type="button" class="btn btn-secondary btn-sm" @click="printProviders()">
+                            <i class="fas fa-print mr-1"></i> Imprimer PDF
+                        </button>
+                    </div>
                 </div>
                 <!-- /.card-header -->
                 <div class="card-body">
@@ -16,12 +24,20 @@
                         <table class="table m-0" id="table-providers">
                             <thead>
                             <tr>
-                                <th>Nom</th>
+                                <th width="100px">Nom</th>
+                                <th>NIF</th>
+                                <th>Montant Engagé</th>
+                                <th>Montant payé</th>
+                                <th>Solde</th>
                             </tr>
                             </thead>
                             <tbody>
                             <tr v-for="provider in providers" @click="loadProviderData(provider.name)" v-bind:class="{ 'bg-info':  provider.name == selectedProvider}">
                                 <td>{{ provider.name }}</td>
+                                <td>{{ provider.nif }}{{ provider.code_nif }}</td>
+                                <td class="text-center"><small>{{ provider.mt_engage|numFormat }}</small></td>
+                                <td class="text-center"><small>{{ provider.mt_paye|numFormat }}</small></td>
+                                <td class="text-center"><small>{{ provider.solde|numFormat }}</small></td>
                             </tr>
                             </tbody>
                         </table>
@@ -31,7 +47,7 @@
                 <!-- /.card-body -->
             </div>
         </div>
-        <div class="col-md-6">
+        <div class="col-md-6 col-sm-9 col-xs-9 col-lg-6">
             <div class="card">
                 <div class="card-header">
                     <h3 class="card-title">
@@ -40,14 +56,17 @@
                             <span class="sr-only">Loading...</span>
                         </div>
                     </h3>
+                    <div class="card-tools">
+                        <button v-if="selectedProvider != ''" type="button" class="btn btn-secondary btn-sm" @click="printProvider(selectedProvider)">
+                            <i class="fas fa-print mr-1"></i> Imprimer
+                        </button>
+                        <!-- <button v-if="selectedProvider != ''" type="button" class="btn btn-info btn-sm" @click="printHistory(selectedProvider)">
+                            <i class="fas fa-history mr-1"></i> Situation
+                        </button> -->
+                    </div>
                 </div>
                 <!-- /.card-header -->
                 <div class="card-body">
-                    <!--<div class="d-flex justify-content-center mb-3">-->
-                        <!--<div class="spinner-grow text-warning" role="status">-->
-                            <!--<span class="sr-only">Loading...</span>-->
-                        <!--</div>-->
-                    <!--</div>-->
                     <h4 v-if="selectedProvider == ''" class="text-muted text-center">Veuillez sélectionner un fournisseur pour afficher les détails</h4>
                     <div class="row" v-if="selectedProvider != ''">
                         <div class="col-md-12">
@@ -55,10 +74,14 @@
                                 <div class="col-md-12">
                                     <ul class="nav nav-tabs" id="custom-content-below-tab" role="tablist">
                                         <li class="nav-item">
-                                            <a class="nav-link active" id="custom-content-below-home-tab" data-toggle="pill" href="#custom-content-below-home" role="tab" aria-controls="custom-content-below-home" aria-selected="true">Engagements ({{ paginationEngagement.total }})</a>
+                                            <a class="nav-link active" id="custom-content-below-home-tab" data-toggle="pill"
+                                               href="#custom-content-below-home" role="tab" aria-controls="custom-content-below-home"
+                                               aria-selected="true">Engagements ({{ paginationEngagement.total }})</a>
                                         </li>
                                         <li class="nav-item">
-                                            <a class="nav-link" id="custom-content-below-profile-tab" data-toggle="pill" href="#custom-content-below-profile" role="tab" aria-controls="custom-content-below-profile" aria-selected="false">Echelons ({{ paginationEchelon.total }})</a>
+                                            <a class="nav-link" id="custom-content-below-profile-tab" data-toggle="pill"
+                                               href="#custom-content-below-profile" role="tab" aria-controls="custom-content-below-profile"
+                                               aria-selected="false">Paiements ({{ paginationEchelon.total }})</a>
                                         </li>
                                     </ul>
                                     <div class="tab-content" id="custom-content-below-tabContent">
@@ -78,9 +101,24 @@
                                                         {{ amounts.non_paye|numFormat }}
                                                     </button>
                                                 </div>
-                                                <div class="col-md-3">
+                                            </div>
+                                            <div class="row">
+                                                <div class="col-md-4">
                                                     <div class="form-group">
-                                                        <input type="text" class="form-control" placeholder="Votre recherche" v-model="filter.engagement" @change="searchEngagement"/>
+                                                        <div class="input-group">
+                                                            <div class="input-group-prepend">
+                                                                <span class="input-group-text">
+                                                                    <i class="far fa-calendar-alt"></i>
+                                                                </span>
+                                                            </div>
+                                                            <input type="text" class="form-control form-control-sm float-right calendrier"
+                                                                   @change="searchEngagement">
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                <div class="col-md-4">
+                                                    <div class="form-group">
+                                                        <input type="text" class="form-control form-control-sm" placeholder="Votre recherche" v-model="filter.engagement" v-on:input="searchEngagement"/>
                                                     </div>
                                                 </div>
                                             </div>
@@ -98,8 +136,8 @@
                                                     </thead>
                                                     <tbody style="font-size: 14px">
                                                     <tr>
-                                                        <td colspan="5" v-if="engagements.length <= 0">
-                                                            Aucun engagement trouvé
+                                                        <td colspan="6" v-if="engagements.length <= 0">
+                                                            Aucun engagement
                                                         </td>
                                                     </tr>
                                                     <tr v-for="(engagement, index) in engagements" v-bind:class="{ 'text-success':  engagement.is_paid}">
@@ -112,7 +150,10 @@
                                                         <td class="text-center">
                                                             <span class="badge badge-info">{{ engagement.m_paye|numFormat }}</span>
                                                         </td>
-                                                        <td>{{ engagement.date_paiement }}</td>
+                                                        <td>
+                                                            <span v-if="engagement.date_paiement">{{ engagement.date_paiement|moment('DD/MM/Y') }}</span>
+                                                            <span v-if="!engagement.date_paiement">N/A</span>
+                                                        </td>
                                                     </tr>
                                                     </tbody>
                                                 </table>
@@ -153,8 +194,8 @@
                                                     </thead>
                                                     <tbody style="font-size: 14px">
                                                     <tr>
-                                                        <td colspan="5" v-if="echelons.length <= 0">
-                                                            Aucun echelon trouvé
+                                                        <td colspan="6" v-if="echelons.length <= 0">
+                                                            Aucun paiement
                                                         </td>
                                                     </tr>
                                                     <tr v-for="(echelon, index) in echelons">
@@ -163,7 +204,10 @@
                                                         <td class="text-center">
                                                             <span class="badge badge-info">{{ echelon.m_paye|numFormat }}</span>
                                                         </td>
-                                                        <td>{{ echelon.date_paiement }}</td>
+                                                        <td>
+                                                            <span v-if="echelon.date_paiement">{{ echelon.date_paiement|moment('DD/MM/Y') }}</span>
+                                                            <span v-if="!echelon.date_paiement">N/A</span>
+                                                        </td>
                                                         <td>
                                                             <ul>
                                                                 <li v-for="document in echelon.documents">
@@ -223,13 +267,45 @@
 
             </div>
         </div>
+
+        <!-- Modal sélection de la période pour l'impression de la situation des fournisseurs-->
+        <div class="modal fade" id="modal-periode">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h4 class="modal-title">Séléction de la période</h4>
+                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                            <span aria-hidden="true">&times;</span>
+                        </button>
+                    </div>
+                    <div class="modal-body">
+                        <div class="form-group">
+                            <div class="input-group">
+                                <div class="input-group-prepend">
+                                    <span class="input-group-text">
+                                        <i class="far fa-calendar-alt"></i>
+                                    </span>
+                                </div>
+                                <input type="text" class="form-control float-right periode">
+                            </div>
+                        </div>
+                    </div>
+                    <div class="modal-footer float-right">
+                        <button type="button" class="btn btn-primary" data-dismiss="modal" @click="confirmPrintProviders()">
+                            <i class="mr-1 fas fa-print"></i>Imprimer
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div> <!-- /.modal-edit -->
     </div>
 </template>
 
 <script>
     export default {
         props : [],
-
+        mounted() {
+        },
         data(){
             return{
                 providers: [],
@@ -242,7 +318,9 @@
                 echelons: [],
                 filter: {
                     engagement: '',
-                    echelon: ''
+                    echelon: '',
+                    start: '',
+                    end: ''
                 },
                 spinner: false,
                 api_token: '',
@@ -257,11 +335,14 @@
                 selectedProvider : '',
                 spinnerProviders: true,
                 spinnerDetails: false,
+                calendrier: null,
+                periode: {
+                    start: '',
+                    end: ''
+                }
 
 
             }
-        },
-        mounted() {
         },
 
         created(){
@@ -272,6 +353,9 @@
 
                 this.fetchProviders()
             }
+
+            this.filter.start = moment().startOf('year').format('YYYY-MM-DD')
+            this.filter.end = moment().format('YYYY-MM-DD')
 
         },
 
@@ -308,6 +392,22 @@
                 let vm = this
                 this.spinnerDetails = true
                 this.selectedProvider = provider
+                setTimeout(function () {
+                    $('.calendrier').daterangepicker({
+                        startDate:moment().startOf('year'),
+                        endDate  : moment(),
+                        locale: {
+                            format: 'DD/MM/YYYY'
+                        }
+                    })
+
+                    $('.calendrier').on('apply.daterangepicker', function(ev, picker) {
+                        vm.filter.start = picker.startDate.format('YYYY-MM-DD');
+                        vm.filter.end = picker.endDate.format('YYYY-MM-DD');
+
+                        vm.fetchEngagements()
+                    });
+                }, 100)
                 vm.fetchEngagements()
                 // vm.fetchEchelons()
 
@@ -317,6 +417,7 @@
                 let vm = this;
 
                 let url_parameters = `api_token=${this.api_token}&provider=${this.selectedProvider}&keyword=${this.filter.engagement}`
+                    +`&start=${this.filter.start}&end=${this.filter.end}`
                 let page_url = `/api/provider/engagements?${url_parameters}`
                 if(page) page_url = `${page}&${url_parameters}`
 
@@ -389,6 +490,44 @@
 
                 this.paginationEchelon = pagination;
             },
+            printProvider(provider){
+                window.open(`/providers/provider-pdf?provider=${provider}&start=${this.filter.start}&end=${this.filter.end}`, '_blank')
+            },
+            printHistory(provider){
+                window.open(`/providers/history?provider=${provider}`, '_blank')
+            },
+            printProviders(){
+                let vm = this
+                vm.periode.start = moment().startOf('year').format('YYYY-MM-DD');
+                vm.periode.end = moment().format('YYYY-MM-DD');
+
+                $('#modal-periode').modal('show');
+                setTimeout(function () {
+                    $('.periode').daterangepicker({
+                        // multipleDatePicker: true,
+                        // showDropdowns: true,
+                        // minYear: moment().startOf('year'),
+                        // maxYear: moment(),
+                        startDate:moment().startOf('year'),
+                        endDate  : moment(),
+                        locale: {
+                            format: 'DD/MM/YYYY'
+                        }
+                    })
+                    $('.periode').on('apply.daterangepicker', function(ev, picker) {
+                        vm.periode.start = picker.startDate.format('YYYY-MM-DD');
+                        vm.periode.end = picker.endDate.format('YYYY-MM-DD');
+                    });
+                }, 100)
+                // window.open('/providers/pdf/situation-fournisseurs', '_blank')
+            },
+            confirmPrintProviders(){
+                window.open(`/providers/pdf/situation-fournisseurs?start=${this.periode.start}&end=${this.periode.end}`, '_blank')
+            },
+            exportProviders(){
+                window.open(`/providers/export`, '_blank')
+            }
+
         }
 
     }

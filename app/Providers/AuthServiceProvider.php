@@ -28,16 +28,20 @@ class AuthServiceProvider extends ServiceProvider
 
         //Check for Admin
         //return true if auth user is admin
+        Gate::define('isSuperAdmin', function ($user){
+            return $user->role == 'superadmin';
+        });
+
+        //Check for Admin
+        //return true if auth user is admin
         Gate::define('isAdmin', function ($user){
-            return $user->role == 'admin';
+            return $user->role == 'superadmin' || $user->role == 'admin';
         });
 
         //Check for Manager
         //return true if auth user is manager
         Gate::define('isManager', function ($user){
-            return $user->role == 'admin' || $user->role == 'manager';
+            return $user->role == 'superadmin' || $user->role == 'admin' || $user->role == 'manager';
         });
-
-        //
     }
 }

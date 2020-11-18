@@ -2,6 +2,7 @@
 
 namespace App\Http\Resources;
 
+use App\Http\Resources\Group as GroupResource;
 use Illuminate\Http\Resources\Json\JsonResource;
 
 class User extends JsonResource
@@ -16,6 +17,7 @@ class User extends JsonResource
     {
         return [
             'id' => $this->id,
+            'group_id' => $this->group_id,
             'name' => $this->name,
             'firstname' => $this->firstname,
             'username' => $this->username,
@@ -23,7 +25,9 @@ class User extends JsonResource
             'phonenumber' => $this->phonenumber,
             'role' => $this->role,
             'status' => $this->status,
-            'api_token' => $this->api_token
+            'api_token' => $this->api_token,
+            'group' => new GroupResource($this->group),
+            'avatar' => $this->avatar
         ];
     }
 }

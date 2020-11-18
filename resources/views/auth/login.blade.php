@@ -22,7 +22,7 @@
 <body class="hold-transition login-page">
 <div class="login-box" id="app">
     <div class="login-logo">
-        <a href="#"><b>Compta</b>REPORT</a>
+        <a href="#"><b>Ges</b>RECOUV</a>
     </div>
     <!-- /.login-logo -->
     <login-component></login-component>

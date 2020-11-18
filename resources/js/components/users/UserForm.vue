@@ -48,7 +48,7 @@
             </div>
         </div>
         <div class="form-row">
-            <div class="form-group col-md-6">
+            <!-- <div class="form-group col-md-6">
                 <label for="role">Role <span class="text-danger">(*)</span></label>
                 <select id="role" class="form-control" v-model.trim="$v.user.role.$model" name="role">
                     <option value="">--- Sélectionnez un role ---</option>
@@ -56,6 +56,14 @@
                     <option value="admin">Administrateur</option>
                 </select>
                 <small class="form-text text-danger" v-if="!$v.user.role.required">Champs requis.</small>
+            </div> -->
+            <div class="form-group col-md-6">
+                <label for="role">Groupe <span class="text-danger">(*)</span></label>
+                <select id="role" class="form-control" v-model.trim="$v.user.group_id.$model" name="group_id">
+                    <option value="">--- Sélectionnez un groupe ---</option>
+                    <option v-for="group in groups" :value="group.id">{{group.name}}</option>
+                </select>
+                <small class="form-text text-danger" v-if="!$v.user.group_id.required">Champs requis.</small>
             </div>
             <div class="form-group col-md-6">
                 <label for="phonenumber">Téléphone</label>
@@ -97,7 +105,9 @@
                     role: "",
                     phonenumber: '',
                     status: true,
+                    group_id: ''
                 },
+                groups: [],
                 spinner: false,
                 csrfToken: null,
                 api_token: '',
@@ -121,7 +131,7 @@
                     minLength: minLength(3),
                     maxLength: maxLength(50),
                     async isUnique (value) {
-                        if (value === '') return true
+                        if (value == '') return true
                         const response = await fetch(`/api/user/unique-username/${value}?api_token=${this.api_token}`)
                         return Boolean(await response.json())
                     }
@@ -141,7 +151,7 @@
                 repeatPassword: {
                     sameAsPassword: sameAs('password')
                 },
-                role: {
+                group_id: {
                     required
                 },
                 phonenumber: {
@@ -157,11 +167,23 @@
                 this.api_token = authUser.api_token
             }
 
+            this.fetchGroups()
+
             this.csrfToken = document.querySelector('meta[name="csrf-token"]').content
         },
 
         methods: {
-
+            fetchGroups() {
+                let page_url = `/api/groups?api_token=${this.api_token}`
+                fetch(page_url)
+                    .then(res => res.json())
+                    .then(res => {
+                        this.groups = res.data
+                    })
+                    .catch(error => {
+                        console.log(error)
+                    });
+            },
         }
 
     }

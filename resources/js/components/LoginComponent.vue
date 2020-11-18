@@ -115,6 +115,8 @@
                     })
                     .catch(error => {
                         this.showMessageError = true
+                        this.btnSubmit = true
+                        this.btnLoading = false
                         console.log(error)
                     });
             }

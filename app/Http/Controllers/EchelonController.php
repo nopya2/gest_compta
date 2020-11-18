@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Echelon;
 use App\Engagement;
 use App\Document;
+use App\Historique;
 use App\Http\Resources\Echelon as EchelonResource;
 use App\Providers\Functions;
 use Illuminate\Http\Request;
@@ -27,7 +28,7 @@ class EchelonController extends Controller
      */
     public function index(Request $request)
     {
-        $echelons = Echelon::whereBetween('date_paiement', [$request->exercice.'-01-01 00:00:00', $request->exercice.'-12-31 23:59:59'])
+        $requete = Echelon::whereBetween('created_at', [$request->exercice.'-01-01 00:00:00', $request->exercice.'-12-31 23:59:59'])
             ->where(function ($query) use ($request){
                 $query
                     ->whereHas('engagement', function ($query) use ($request){
@@ -35,7 +36,14 @@ class EchelonController extends Controller
                             ->orWhere('n_devis', 'like', '%' . $request->keyword . '%');
                     })
                     ->orWhere('n_engage', 'LIKE', '%' . $request->keyword . '%');
-            })
+            });
+
+        if($request->etat !== null){
+            $requete
+                ->where('etat', '=', $request->etat);
+        }
+
+        $echelons = $requete
             ->orderBy('id', 'desc')
             ->paginate(15);
 
@@ -63,11 +71,12 @@ class EchelonController extends Controller
         $currentUser = Auth::user();
 
         $data = $request->validate([
+            'n_ordonnance' => ['required'],
             'n_engage' => ['required'],
             'm_paye' => ['required'],
-            'date_paiement' => ['required'],
-            'date_depot_ac' => ['required'],
-            'comment' => ['required']
+            'date_paiement' => [''],
+            'date_depot_ac' => [''],
+            'comment' => ['']
         ]);
 
         //On selectionne d'abord l'engagement qui correspond a ce numero d'engagement
@@ -76,6 +85,7 @@ class EchelonController extends Controller
             ->first();
 
         $echelon = Echelon::forceCreate([
+            'n_ordonnance' => $data['n_ordonnance'],
             'n_engage' => $data['n_engage'],
             'm_paye' => $data['m_paye'],
             'date_paiement' => Functions::stringToDate($data['date_paiement']),
@@ -85,22 +95,14 @@ class EchelonController extends Controller
             'engagement_id' => $engagement->id
         ]);
 
-        //Puis on met a jour les donnees
-        $engagement->v_m_paye = $engagement->v_m_paye + $data['m_paye'];
-        $engagement->m_paye = $engagement->m_paye + $data['m_paye'];
-
-        //On modifie le statut de l'engagement ('is_paid')
-        if($engagement->m_engage <= $engagement->v_m_paye)
-            $engagement->is_paid = true;
-
-        //On modifie la date de paiement pour appliquer à la derniere date de paiement
-        $engagement->date_paiement = Functions::stringToDate($data['date_paiement']);
-        $engagement->date_depot_ac = Functions::stringToDate($data['date_depot_ac']);
-
-
-
-        $engagement->updated_at = new \DateTime();
+        $engagement->date_paiement = $echelon->date_paiement;
+        $engagement->date_depot_ac = $echelon->date_depot_ac;
         $engagement->save();
+
+        if($engagement->is_paid == true){
+            $echelon->etat = 'validated';
+            $echelon->save();
+        }
 
         return new EchelonResource($echelon);
     }
@@ -171,6 +173,73 @@ class EchelonController extends Controller
 
         // $request->file->move(public_path('uploads/excel-files'), $fileName);
 
+    }
+
+    public function validerPaiement(Request $request){
+        $echelon = Echelon::find($request->id);
+
+        $echelon->etat = 'validated';
+        $echelon->date_paiement = Functions::stringToDate($request->date_paiement);
+        $echelon->save();
+
+        //On actualise le montant l'engagement
+        $echelon->engagement->m_paye += $echelon->m_paye;
+        //On modifie la date de paiement pour appliquer à la derniere date de paiement
+        $echelon->engagement->date_paiement = $echelon->date_paiement;
+        $echelon->engagement->date_depot_ac = $echelon->date_depot_ac;
+//        $engagement->date_depot_ac = Functions::stringToDate($data['date_depot_ac']);
+        $echelon->engagement->save();
+
+
+        //On cree l'evenement
+        $currentUser = Auth::user();
+        $options['echelon_id'] = $echelon->id;
+        $options['user'] = $currentUser->name." ".$currentUser->firstname;
+        $options['action'] = 'Valider paiement';
+        $options['engagement'] = $echelon->engagement->n_engage;
+        $options['montant'] = $echelon->m_paye;
+
+        $event = Historique::forceCreate([
+            'body' => $options,
+        ]);
+
+        return new EchelonResource($echelon);
+
+    }
+
+    public function annulerPaiement(Request $request){
+        $echelon = Echelon::find($request->id);
+
+        $echelon->etat = 'cancelled';
+        $echelon->save();
+
+        //On cree l'evenement
+        $currentUser = Auth::user();
+        $options['echelon_id'] = $echelon->id;
+        $options['user'] = $currentUser->name." ".$currentUser->firstname;
+        $options['action'] = 'Valider paiement';
+        $options['engagement'] = $echelon->engagement->n_engage;
+        $options['montant'] = $echelon->m_paye;
+
+        $event = Historique::forceCreate([
+            'body' => $options,
+        ]);
+
+        return new EchelonResource($echelon);
+
+    }
+
+
+    public function showAttacheFile($document)
+    {
+        $file = public_path()."/uploads/documents/".$document;
+        // // Quick check to verify that the file exists
+        if( !file_exists($file) ) die("File not found");
+        // // Force the download
+        header("Content-Disposition: attachment; filename=" . basename($file));
+        header("Content-Length: " . filesize($file));
+        header("Content-Type: application/octet-stream;");
+        readfile($file);
     }
 
     /**

@@ -1,81 +1,171 @@
 <template>
     <div class="card-block table-border-style">
         <div class="row mb-3">
-          <div class="col-md-3 offset-md-3">
-                <!-- Info Boxes Style 2 -->
+            <div class="col-md-3 offset-md-3">
                 <div class="info-box mb-3 bg-info">
-                  <span class="info-box-icon"><i class="fas fa-tag"></i></span>
-
-                  <div class="info-box-content">
-                    <span class="info-box-text">Total montant engagé</span>
-                    <span class="info-box-number">{{ amounts.engage|numFormat }}</span>
-                  </div>
-                  <!-- /.info-box-content -->
-                </div>
-              </div>
-
-              <div class="col-md-3">
-                    <!-- Info Boxes Style 2 -->
-                    <div class="info-box mb-3 bg-success">
-                      <span class="info-box-icon"><i class="fas fa-tag"></i></span>
-
-                      <div class="info-box-content">
-                        <span class="info-box-text">Total montant payé</span>
-                        <span class="info-box-number">{{ amounts.paye|numFormat }}</span>
-                      </div>
-                      <!-- /.info-box-content -->
+                    <span class="info-box-icon"><i class="fas fa-tag"></i></span>
+                    <div class="info-box-content">
+                        <span class="info-box-text">Total montant engagé</span>
+                        <span class="info-box-number">{{ amounts.engage|numFormat }}</span>
                     </div>
-                  </div>
+                </div>
+            </div>
 
             <div class="col-md-3">
-                  <!-- Info Boxes Style 2 -->
-                  <div class="info-box mb-3 bg-danger">
+                <div class="info-box mb-3 bg-success">
                     <span class="info-box-icon"><i class="fas fa-tag"></i></span>
-
                     <div class="info-box-content">
-                      <span class="info-box-text">Total montant non payé</span>
-                      <span class="info-box-number">{{ amounts.non_paye|numFormat }}</span>
+                        <span class="info-box-text">Total montant payé</span>
+                        <span class="info-box-number">{{ amounts.paye|numFormat }}</span>
                     </div>
-                    <!-- /.info-box-content -->
-                  </div>
                 </div>
+            </div>
+
+            <div class="col-md-3">
+                <div class="info-box mb-3 bg-danger">
+                    <span class="info-box-icon"><i class="fas fa-tag"></i></span>
+                    <div class="info-box-content">
+                        <span class="info-box-text">Total montant non payé</span>
+                        <span class="info-box-number">{{ amounts.non_paye|numFormat }}</span>
+                    </div>
+                </div>
+            </div>
         </div>
 
         <hr>
 
         <div class="row mb-2">
             <div class="col-md-3">
-                <button type="button" class="btn btn-success btn-sm" @click="openImportForm">
+                <button type="button" class="btn btn-success mr-1 mb-1" @click="openImportForm" v-if="importer">
                     <i class="fa fa-upload"></i> Importer engagements
                 </button>
+                <button class="btn btn-primary mr-1 mb-1" v-if="exporter">Export excel</button>
             </div>
             <div class="col-md-9">
                 <div class="row">
-                    <div class="col-sm-2">
+                    <div class="col-sm-3">
                         <div class="form-group">
                             <label>Exercice</label>
-                            <select class="form-control form-control-sm" v-model="filter.exercice" @change="search">
+                            <select class="form-control" v-model="filter.exercice" @change="search">
+                                <option value="">Tout</option>
                                 <option v-for="(year, index) in years" v-bind:value="year">{{ year }}</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="col-sm-3">
+                        <div class="form-group">
+                            <label>Mois</label>
+                            <select class="form-control" v-model="filter.month" @change="search">
+                                <option value="0">Tout</option>
+                                <option v-for="month in months" :value="month.value" v-if="filter.exercice != ''">{{ month.name }}</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="col-sm-3">
+                        <div class="form-group">
+                            <label>Nature de la dépense</label>
+                            <select class="form-control" v-model="filter.nature" @change="search">
+                                <option value="">Tout</option>
+                                <option value="Fonctionnement">Fonctionnement</option>
+                                <option value="Investissement">Investissement</option>
+                                <!-- <option v-for="(nature, index) in natures" v-bind:value="nature.nat_dep">{{ nature.nat_dep }}</option> -->
                             </select>
                         </div>
                     </div>
                     <div class="col-md-3">
                         <div class="form-group">
-                            <label>Tapez votre recherche</label>
-                            <input type="text" class="form-control form-control-sm" placeholder="Tapez votre recherche" v-model="filter.keyword" v-on:keyup="search">
+                            <label>Tapez n° engagement</label>
+                            <input type="text" class="form-control" placeholder="Tapez votre recherche" v-model="filter.keyword" v-on:keyup="search">
                         </div>
                     </div>
-                    <div class="col-md-2">
-                        <div class="form-group">
-                            <label>Statut</label>
-                            <select class="form-control form-control-sm" v-model="filter.status" @change="search">
-                                <option value="">Tout</option>
-                                <option value="non_paye">Non payé</option>
-                                <option value="paye">Payé</option>
-                            </select>
+                    <div class="col-md-12">
+                        <p>
+                            <a class="btn btn-primary" data-toggle="collapse" href="#collapseExample" role="button" aria-expanded="false" aria-controls="collapseExample">
+                                Plus de filtres
+                            </a>
+                            <!-- <button class="btn btn-primary" type="button" data-toggle="collapse" data-target="#collapseExample" aria-expanded="false" aria-controls="collapseExample">
+                                Button with data-target
+                            </button> -->
+                        </p>
+                        <div class="collapse" id="collapseExample">
+                            <!-- <div class="card card-body">
+                                Anim pariatur cliche reprehenderit, enim eiusmod high life accusamus terry richardson ad squid. Nihil anim keffiyeh helvetica, craft beer labore wes anderson cred nesciunt sapiente ea proident.
+                            </div> -->
+                            <div class="row">
+                                <div class="col-md-3">
+                                    <!-- <div class="form-group">
+                                        <label>Fournisseur</label>
+                                        <select class="form-control select2" v-model="filter.provider" @change="search" id="providers">
+                                            <option value="">Tout</option>
+                                            <option v-for="provider in providers" :value="provider.name">
+                                                {{ provider.name }}
+                                            </option>
+                                        </select>
+                                    </div> -->
+                                    <!-- /.form-group -->
+                                    <div class="form-group">
+                                        <label>Fournisseurs</label><br>
+                                        <select @change="search" id="providers" multiple="multiple">
+                                            <!-- <option value="">Tout</option> -->
+                                            <option v-for="provider in providers" :value="provider.name">
+                                                {{ provider.name }}
+                                            </option>
+                                        </select>
+                                    </div>
+                                </div>
+                                <div class="col-md-3">
+                                    <div class="form-group">
+                                        <label>Statut</label>
+                                        <select class="form-control" v-model="filter.status" @change="search">
+                                            <option value="">Tout</option>
+                                            <option value="non_paye">Non payé</option>
+                                            <option value="paye">Payé</option>
+                                        </select>
+                                    </div>
+                                </div>
+                                <div class="col-md-3">
+                                    <div class="form-group">
+                                        <label>Chapitre</label>
+                                        <select class="form-control" v-model="filter.chapitre" @change="search">
+                                            <option value="">Tous les chapitres</option>
+                                            <option v-for="chapitre in chapitres" :value="chapitre.n_chap">{{ chapitre.n_chap }} - {{ chapitre.l_chap }}</option>
+                                        </select>
+                                    </div>
+                                </div>
+                                <div class="col-md-3">
+                                    <div class="form-group">
+                                        <label>Effectivité</label>
+                                        <select class="form-control" v-model="filter.realized" @change="search">
+                                            <option value="">Tous</option>
+                                            <option value="false">Inachevé</option>
+                                            <option value="true">Achevé</option>
+                                        </select>
+                                    </div>
+                                </div>
+                                <div class="col-md-2">
+                                    <div class="form-group clearfix">
+                                        <div class="icheck-primary d-inline">
+                                            <input type="checkbox" id="enRetard" v-model="filter.is_late" @change="search">
+                                            <label for="enRetard">
+                                                En retard
+                                            </label>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-2">
+                                    <div class="form-group clearfix">
+                                        <div class="icheck-primary d-inline">
+                                            <input type="checkbox" id="reengagement" v-model="filter.reengagement" @change="search">
+                                            <label for="reengagement">
+                                                Réengagement
+                                            </label>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
                     </div>
-                    <div class="col-md-2">
+                    <!-- <div class="col-md-2">
                         <div class="form-group">
                             <label>Ordre montant engagé</label>
                             <select class="form-control form-control-sm" v-model="filter.order" @change="search">
@@ -84,28 +174,11 @@
                                 <option value="desc">Du plus grand au plus petit</option>
                             </select>
                         </div>
-                    </div>
-                    <div class="col-md-2">
-                        <div class="form-group clearfix">
-                            <div class="icheck-primary d-inline">
-                                <input type="checkbox" id="checkboxPrimary2" v-model="filter.is_late" @change="search">
-                                <label for="checkboxPrimary2">
-                                    En retard
-                                </label>
-                            </div>
-                        </div>
-                    </div>
+                    </div> -->
                 </div>
             </div>
         </div>
-        <div class="row mb-2">
-            <div class="col-md-12">
-                <download-excel
-                    :data   = "engagements">
-                    <button class="btn btn-primary">Export excel</button>
-                </download-excel>
-            </div>
-        </div>
+
         <div class="table-border-style">
             <div class="d-flex justify-content-center mb-3" v-if="spinner">
                 <div class="spinner-grow text-warning" role="status">
@@ -122,42 +195,46 @@
                     <thead>
                         <tr style="text-align: center;">
                             <th>#</th>
-                            <th>d_exerci</th>
-                            <th>c_dest</th>
-                            <th>nat_dep</th>
-                            <th>l_dest</th>
-                            <th>m_dispo</th>
-                            <th>m_toteng</th>
-                            <th>m_tengvi</th>
-                            <th>m_totliq</th>
-                            <th>m_tordvi</th>
-                            <th>m_totord</th>
-                            <th>m_dotini</th>
-                            <th>n_engage</th>
-                            <th>m_engage</th>
-                            <th>date_depot_ac</th>
-                            <th>date_paiement</th>
-                            <th>m_paye</th>
-                            <th>d_engage</th>
-                            <th>mois_</th>
-                            <th>m_tliqenga</th>
-                            <th>m_non_paye</th>
-                            <th>l_depeng</th>
-                            <th>l_nmtir</th>
-                            <th>n_mattir</th>
-                            <th>c_mattir</th>
-                            <th>l_chap</th>
-                            <th>n_devis</th>
-                            <th>nip</th>
+                            <th title="Exercice">{{ 'Exercice' | truncate(20) }}</th>
+                            <th title="Imputation Budgétaire">{{ 'Imputation Budgétaire' | truncate(20) }}</th>
+                            <th title="Nature Dépense">{{ 'Nature Dépense' | truncate(20) }}</th>
+                            <th title="Libellé Imputation Budgétaire">{{ 'Libellé Imputation Budgétaire' | truncate(20) }}</th>
+                            <!-- <th>m_dispo</th> -->
+                            <!-- <th>m_toteng</th> -->
+                            <!-- <th>m_tengvi</th> -->
+                            <!-- <th>m_totliq</th> -->
+                            <!-- <th>m_tordvi</th> -->
+                            <!-- <th>m_totord</th> -->
+                            <!-- <th>m_dotini</th> -->
+                            <th title="N° enagement">{{ 'N° enagement' | truncate(20) }}</th>
+                            <th title="Montant engagé">{{ 'Montant engagé' | truncate(20) }}</th>
+                            <th title="Date de dépôt Agence Comptable ANINF">{{ 'Date de dépôt Agence Comptable ANINF' | truncate(20) }}</th>
+                            <th title="Date de paiements">{{ 'Date paiement' | truncate(20) }}</th>
+                            <th title="Montant payé">{{ 'Montant payé' | truncate(20) }}</th>
+                            <th title="Dates d’engagement">{{ 'Dates d’engagement' | truncate(20) }}</th>
+                            <!-- <th>mois_</th> -->
+                            <!-- <th>m_tliqenga</th> -->
+                            <th title="Montants non payé">{{ 'Montants non payé' | truncate(20) }}</th>
+                            <th title="Libellé de la dépense">{{ 'Libellé dépense' | truncate(20) }}</th>
+                            <th title="Fournisseurs">{{ 'Fournisseurs' | truncate(20) }}</th>
+                            <th title="N° matricule">{{ 'N° matricule' | truncate(20) }}</th>
+                            <th title="Code matricule">{{ 'Code matricule' | truncate(20) }}</th>
+                            <th title="Chapitre">{{ 'Chapitre' | truncate(20) }}</th>
+                            <th title="N° devis (factures)">{{ 'N° devis (factures)' | truncate(20) }}</th>
+                            <!-- <th>nip</th> -->
+                            <th>Réengagement</th>
+                            <th>Date d'échéance</th>
                         </tr>
                     </thead>
                     <tbody style="font-size: 14px">
                         <tr>
-                            <td colspan="28" v-if="engagements.length <= 0">
+                            <td colspan="20" v-if="engagements.length <= 0">
                                 Aucun engagement trouvé
                             </td>
                         </tr>
-                        <tr v-for="(engagement, index) in engagements" v-bind:key="engagement.id" v-bind:class="{ 'text-success':  engagement.is_paid, 'text-danger': engagement.is_late}">
+                        <tr v-for="(engagement, index) in engagements" v-bind:key="engagement.id"
+                            v-bind:class="{ 'text-success':  engagement.is_paid, 'text-danger': engagement.is_late}"
+                            data-toggle="tooltip" data-placement="top" title="Tooltip on top">
                             <td>
                                 <a v-bind:href="'/engagements/'+engagement.id">
                                     <button class="btn btn-sm btn-info" title="Visualiser">
@@ -169,25 +246,34 @@
                             <td>{{ engagement.c_dest }}</td>
                             <td>{{ engagement.nat_dep }}</td>
                             <td data-toggle="tooltip" data-placement="top" :title="engagement.l_dep">{{ engagement.format_l_dep }}</td>
-                            <td>{{ engagement.m_dispo|numFormat }}</td>
-                            <td>{{ engagement.m_toteng|numFormat }}</td>
-                            <td>{{ engagement.m_tengvi|numFormat }}</td>
-                            <td>{{ engagement.m_totliq|numFormat }}</td>
-                            <td>{{ engagement.m_tordvi|numFormat }}</td>
-                            <td>{{ engagement.m_totord|numFormat }}</td>
-                            <td>{{ engagement.m_dotini|numFormat }}</td>
+                            <!-- <td>{{ engagement.m_dispo|numFormat }}</td> -->
+                            <!-- <td>{{ engagement.m_toteng|numFormat }}</td> -->
+                            <!-- <td>{{ engagement.m_tengvi|numFormat }}</td> -->
+                            <!-- <td>{{ engagement.m_totliq|numFormat }}</td> -->
+                            <!-- <td>{{ engagement.m_tordvi|numFormat }}</td> -->
+                            <!-- <td>{{ engagement.m_totord|numFormat }}</td> -->
+                            <!-- <td>{{ engagement.m_dotini|numFormat }}</td> -->
                             <td>{{ engagement.n_engage }}</td>
                             <td class="text-center">
                                 <span class="badge badge-info">{{ engagement.m_engage|numFormat }}</span>
                             </td>
-                            <td>{{ engagement.date_depot_ac }}</td>
-                            <td>{{ engagement.date_paiement }}</td>
+                            <td>
+                                <span v-if="engagement.date_depot_ac">{{ engagement.date_depot_ac | moment("DD/MM/YYYY")}}</span>
+                                <span v-if="!engagement.date_depot_ac">N/A</span>
+                            </td>
+                            <td>
+                                <span v-if="engagement.date_paiement">{{ engagement.date_paiement | moment("DD/MM/YYYY")}}</span>
+                                <span v-if="!engagement.date_paiement">N/A</span>
+                            </td>
                             <td class="text-center">
                                 <span class="badge badge-warning">{{ engagement.m_paye|numFormat }}</span>
                             </td>
-                            <td>{{ engagement.d_engage }}</td>
-                            <td>{{ engagement.mois_ }}</td>
-                            <td>{{ engagement.m_tliqenga|numFormat }}</td>
+                            <td>
+                                <span v-if="engagement.d_engage">{{ engagement.d_engage | moment("DD/MM/YYYY")}}</span>
+                                <span v-if="!engagement.d_engage">N/A</span>
+                            </td>
+                            <!-- <td>{{ engagement.mois_ }}</td> -->
+                            <!-- <td>{{ engagement.m_tliqenga|numFormat }}</td> -->
                             <td>{{ engagement.m_non_paye|numFormat }}</td>
                             <td data-toggle="tooltip" data-placement="top" :title="engagement.l_depeng">{{ engagement.format_l_depeng }}</td>
                             <td>{{ engagement.l_nmtir }}</td>
@@ -195,39 +281,46 @@
                             <td>{{ engagement.c_mattir }}</td>
                             <td>{{ engagement.l_chap }}</td>
                             <td>{{ engagement.n_devis }}</td>
-                            <td>{{ engagement.nip }}</td>
+                            <!-- <td>{{ engagement.nip }}</td> -->
+                            <td>{{ engagement.desc_r_engage }}</td>
+                            <td>
+                                <span v-if="engagement.date_echeance">{{ engagement.date_echeance | moment("DD/MM/YYYY")}}</span>
+                                <span v-if="!engagement.date_echeance">N/A</span>
+                            </td>
                         </tr>
                     </tbody>
                     <tfoot>
                     <tr style="text-align: center;">
                         <th>#</th>
-                        <th>d_exerci</th>
-                        <th>c_dest</th>
-                        <th>nat_dep</th>
-                        <th>l_dest</th>
-                        <th>m_dispo</th>
-                        <th>m_toteng</th>
-                        <th>m_tengvi</th>
-                        <th>m_totliq</th>
-                        <th>m_tordvi</th>
-                        <th>m_totord</th>
-                        <th>m_dotini</th>
-                        <th>n_engage</th>
-                        <th>m_engage</th>
-                        <th>date_depot_ac</th>
-                        <th>date_paiement</th>
-                        <th>m_paye</th>
-                        <th>d_engage</th>
-                        <th>mois_</th>
-                        <th>m_tliqenga</th>
-                        <th>m_non_paye</th>
-                        <th>l_depeng</th>
-                        <th>l_nmtir</th>
-                        <th>n_mattir</th>
-                        <th>c_mattir</th>
-                        <th>l_chap</th>
-                        <th>n_devis</th>
-                        <th>nip</th>
+                        <th title="Exercice">{{ 'Exercice' | truncate(20) }}</th>
+                        <th title="Imputation Budgétaire">{{ 'Imputation Budgétaire' | truncate(20) }}</th>
+                        <th title="Nature Dépense">{{ 'Nature Dépense' | truncate(20) }}</th>
+                        <th title="Libellé Imputation Budgétaire">{{ 'Libellé Imputation Budgétaire' | truncate(20) }}</th>
+                        <!-- <th>m_dispo</th> -->
+                        <!-- <th>m_toteng</th> -->
+                        <!-- <th>m_tengvi</th> -->
+                        <!-- <th>m_totliq</th> -->
+                        <!-- <th>m_tordvi</th> -->
+                        <!-- <th>m_totord</th> -->
+                        <!-- <th>m_dotini</th> -->
+                        <th title="N° enagement">{{ 'N° enagement' | truncate(20) }}</th>
+                        <th title="Montant engagé">{{ 'Montant engagé' | truncate(20) }}</th>
+                        <th title="Date de dépôt Agence Comptable ANINF">{{ 'Date de dépôt Agence Comptable ANINF' | truncate(20) }}</th>
+                        <th title="Date de paiements">{{ 'Date paiement' | truncate(20) }}</th>
+                        <th title="Montant payé">{{ 'Montant payé' | truncate(20) }}</th>
+                        <th title="Dates d’engagement">{{ 'Dates d’engagement' | truncate(20) }}</th>
+                        <!-- <th>mois_</th> -->
+                        <!-- <th>m_tliqenga</th> -->
+                        <th title="Montants non payé">{{ 'Montants non payé' | truncate(20) }}</th>
+                        <th title="Libellé de la dépense">{{ 'Libellé dépense' | truncate(20) }}</th>
+                        <th title="Fournisseurs">{{ 'Fournisseurs' | truncate(20) }}</th>
+                        <th title="N° matricule">{{ 'N° matricule' | truncate(20) }}</th>
+                        <th title="Code matricule">{{ 'Code matricule' | truncate(20) }}</th>
+                        <th title="Chapitre">{{ 'Chapitre' | truncate(20) }}</th>
+                        <th title="N° devis (factures)">{{ 'N° devis (factures)' | truncate(20) }}</th>
+                        <!-- <th>nip</th> -->
+                        <th>Réengagement</th>
+                        <th>Date d'échéance</th>
                     </tr>
                     </tfoot>
                 </table>
@@ -296,14 +389,27 @@
 <script>
     export default {
         mounted() {
-            // console.log('Component mounted.')
+            let vm = this
+            //Initialize Select2 Elements
+            $('.select2').select2()
+
+            $('.select2').on('select2:select', function (e) {
+                var data = e.params.data;
+                vm.filter.provider = data.id
+                console.log(vm.filter.provider);
+                vm.search()
+            });
+
         },
 
-        props : [],
+        props : ['importer', 'exporter'],
 
         data(){
             return{
                 engagements: [],
+                chapitres: [],
+                providers: [],
+                selectedProviders: [],
                 amounts: {
                   engage: 0,
                   paye: 0,
@@ -318,7 +424,14 @@
                     exercice: '',
                     is_late: false,
                     status: '',
-                    order: ''
+                    order: '',
+                    nature: '',
+                    reengagement: false,
+                    chapitre: '',
+                    realized: '',
+                    provider: '',
+                    month: 0,
+                    providers: []
                 },
                 spinner: false,
                 api_token: '',
@@ -328,7 +441,11 @@
                 },
                 btnLoading: false,
                 years: [],
-                exercice: 0
+                months: [{name: 'Janvier', value: 1}, {name: 'Février', value: 2}, {name: 'Mars', value: 3}, {name: 'Avril', value: 4}, {name: 'Mai', value: 5},
+                        {name: 'Juin', value: 6}, {name: 'Juillet', value: 7}, {name: 'Aout', value: 8}, {name: 'Septembre', value: 9}, {name: 'Octobre', value: 10},
+                        {name: 'Novembre', value: 11}, {name: 'Décembre', value: 1}, ],
+                exercice: 0,
+                natures: []
 
             }
         },
@@ -340,7 +457,9 @@
                 this.api_token = authUser.api_token
 
                 this.loadYears()
-                this.fetchEngagements()
+                this.fetchNatures()
+                this.fetchChapitres()
+                this.fetchProviders()
             }
 
         },
@@ -349,16 +468,26 @@
             fetchEngagements(page) {
                 let vm = this;
                 this.spinner = true;
+                vm.filter.providers = vm.selectedProviders
 
-                let url_parameters = `api_token=${this.api_token}&keyword=${this.filter.keyword}&exercice=${this.filter.exercice}&late=${this.filter.is_late}&status=${this.filter.status}&order=${this.filter.order}`
+                let url_parameters = `api_token=${this.api_token}&keyword=${this.filter.keyword}&exercice=${this.filter.exercice}`
+                    +`&late=${this.filter.is_late}&status=${this.filter.status}&order=${this.filter.order}`
+                    +`&nature=${this.filter.nature}&reengagement=${this.filter.reengagement}&chapitre=${this.filter.chapitre}`
+                    +`&realized=${this.filter.realized}&provider=${this.filter.provider}`
+                    +`&month=${this.filter.month}`
 
-                let page_url = `/api/engagements?${url_parameters}`
+                let page_url = `/api/engagements/search?${url_parameters}`
                 if(page) page_url = `${page}&${url_parameters}`
 
-                fetch(page_url)
+                fetch(page_url, {
+                        method: 'post',
+                        body: JSON.stringify(this.filter),
+                        headers: {
+                            'content-type': 'application/json'
+                        }
+                    })
                     .then(res => res.json())
                     .then(res => {
-                        console.log(res)
 
                         this.amounts.engage = res.m_engage
                         this.amounts.paye = res.m_paye
@@ -380,6 +509,94 @@
                     .catch(error => {
                         toastr.error('Erreur chargement des données!.')
                         this.spinner = false
+                    });
+            },
+            fetchNatures(){
+                let url_parameters = `api_token=${this.api_token}`
+
+                let page_url = `/api/nature-depense?${url_parameters}`
+
+                fetch(page_url)
+                    .then(res => res.json())
+                    .then(res => {
+                        this.natures = res.data
+                    })
+                    .catch(error => {
+                        toastr.error('Erreur chargement des données!.')
+                        this.spinner = false
+                    });
+            },
+            fetchChapitres(){
+                let url_parameters = `api_token=${this.api_token}`
+
+                let page_url = `/api/parametres/chapitres?${url_parameters}`
+
+                fetch(page_url)
+                    .then(res => res.json())
+                    .then(res => {
+                        this.chapitres = res.data
+                    })
+                    .catch(error => {
+                        toastr.error('Erreur chargement des données!.')
+                        this.spinner = false
+                    });
+            },
+            fetchProviders(page_url) {
+                let vm = this;
+
+                page_url = page_url || `/api/providers?api_token=${this.api_token}`
+                fetch(page_url)
+                    .then(res => res.json())
+                    .then(res => {
+                        this.providers = res.data
+                        setTimeout(function(){
+                            $('#providers').multiselect({
+                                maxHeight: 400,
+                                includeSelectAllOption: true,
+                                // dropUp: true,
+                                enableFiltering: true,
+                                numberDisplayed: 1,
+                                onChange: function(option, checked) {
+                                    if(checked == true){
+                                        vm.selectedProviders.push(option[0].value);
+                                    }else{
+                                        let index = vm.selectedProviders.indexOf(option[0].value);
+                                        vm.selectedProviders.splice(index, 1)
+                                    }
+                                    // alert('onChange triggered ...');
+                                    // console.log(vm.selectedProviders.length);
+                                    vm.fetchEngagements()
+                                },
+                                onSelectAll: function(){
+                                    vm.providers.forEach((item)=>{
+                                        let indexT = vm.selectedProviders.indexOf(item.name)
+                                        if(indexT == -1){
+                                            vm.selectedProviders.push(item.name)
+                                        }
+                                    })
+                                    vm.fetchEngagements()
+                                },
+                                onDeselectAll: function(){
+                                    vm.selectedProviders = []
+                                    vm.fetchEngagements()
+                                }
+                            });
+                            vm.providers.forEach((item)=>{
+                                let indexT = vm.selectedProviders.indexOf(item.name)
+                                if(indexT == -1){
+                                    vm.selectedProviders.push(item.name)
+                                }
+                            })
+                            // $('#providers').multiselect('selectAll', true);
+                            $('#providers').multiselect('select', vm.selectedProviders);
+                            vm.$forceUpdate();
+
+                            vm.fetchEngagements()
+                        }, 500);
+
+                    })
+                    .catch(error => {
+                        toastr.error('Erreur chargement des données!.')
                     });
             },
             makePagination(meta, links){
@@ -436,7 +653,7 @@
             loadYears(){
                 var dt = new Date();
                 let start = parseInt(dt.getFullYear())
-                this.filter.exercice = parseInt(dt.getFullYear())
+                // this.filter.exercice = parseInt(dt.getFullYear())
                 this.exercice = parseInt(dt.getFullYear())
                 for(var i=0; i <= parseInt(dt.getFullYear()); i++){
                     this.years[i] = start

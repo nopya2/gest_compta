@@ -40,6 +40,7 @@ class Engagement extends JsonResource
             'l_nmtir' => $this->l_nmtir,
             'n_mattir' => $this->n_mattir,
             'c_mattir' => $this->c_mattir,
+            'chap' => $this->chap,
             'l_chap' => $this->l_chap,
             'n_devis' => $this->n_devis,
             'nip' => $this->nip,
@@ -52,7 +53,11 @@ class Engagement extends JsonResource
             'is_late' => $this->isLate,
             'is_paid' => $this->is_paid,
             'format_l_depeng' => $this->format_l_depeng,
-            'format_l_dep' => $this->format_l_dep
+            'format_l_dep' => $this->format_l_dep,
+            'date_echeance' => $this->date_echeance,
+            'realized' => $this->realized,
+            'commentaire' => $this->commentaire,
+            'cancelled' => $this->cancelled
 
         ];
     }

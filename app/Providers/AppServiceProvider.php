@@ -3,7 +3,13 @@
 namespace App\Providers;
 
 use App\Engagement;
+use App\Echelon;
+use App\Paiement;
+use App\Facture;
 use App\Observers\EngagementObserver;
+use App\Observers\EchelonObserver;
+use App\Observers\PaiementObserver;
+use App\Observers\FactureObserver;
 use Illuminate\Support\ServiceProvider;
 use Illuminate\Support\Collection;
 use Illuminate\Pagination\LengthAwarePaginator;
@@ -52,5 +58,8 @@ class AppServiceProvider extends ServiceProvider
         });
 
         Engagement::observe(EngagementObserver::class);
+        Echelon::observe(EchelonObserver::class);
+        Paiement::observe(PaiementObserver::class);
+        Facture::observe(FactureObserver::class);
     }
 }

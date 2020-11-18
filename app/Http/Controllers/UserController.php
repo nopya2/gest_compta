@@ -90,7 +90,7 @@ class UserController extends Controller
             'username' => ['required', 'string', 'max:255', 'unique:users'],
             'email' => ['required', 'string', 'email', 'max:255', 'unique:users'],
             'password' => ['required', 'string', 'min:8'],
-            'role' => ['required'],
+            'group_id' => ['required'],
             'phonenumber' => []
         ]);
 
@@ -99,7 +99,7 @@ class UserController extends Controller
             'firstname' => $data['firstname'],
             'username' => $data['username'],
             'email' => $data['email'],
-            'role' => $data['role'],
+            'group_id' => $data['group_id'],
             'phonenumber' => $data['phonenumber'],
             'status' => $checkBox,
             'password' => Hash::make($data['password']),
@@ -206,7 +206,7 @@ class UserController extends Controller
             'firstname' => ['required', 'string', 'max:255'],
             'username' => ['required', 'string', 'max:255', 'unique:users,username,'.$user->id],
             'email' => ['required', 'string', 'email', 'max:255', 'unique:users,email,'.$user->id],
-            'role' => ['required'],
+            'group_id' => ['required'],
             'phonenumber' => []
         ]);
 
@@ -214,7 +214,7 @@ class UserController extends Controller
         $user->firstname = $request->get('firstname');
         $user->username = $request->get('username');
         $user->email = $request->get('email');
-        $user->role = $request->get('role');
+        $user->group_id = $request->get('group_id');
         $user->phonenumber = $request->get('phonenumber');
 //        $user->api_token = Str::random(80);
         $user->status = $checkBox;
@@ -225,9 +225,9 @@ class UserController extends Controller
     }
 
     public function checkUsernameExists(Request $request, $username){
-        if (!Gate::allows('isAdmin')) {
-            abort(403, 'Désolé, vous ne pouvez pas executer cette action');
-        }
+//        if (!Gate::allows('isAdmin')) {
+//            abort(403, 'Désolé, vous ne pouvez pas executer cette action');
+//        }
 
         $user = User::where('username', '=', $username)->first();
 
@@ -296,9 +296,9 @@ class UserController extends Controller
      */
     public function destroy($user)
     {
-        if (!Gate::allows('isAdmin')) {
-            abort(403, 'Désolé, vous ne pouvez pas executer cette action');
-        }
+        // if (!Gate::allows('isAdmin')) {
+        //     abort(403, 'Désolé, vous ne pouvez pas executer cette action');
+        // }
 
         $user = User::find($user);
 

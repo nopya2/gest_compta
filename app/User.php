@@ -10,13 +10,15 @@ class User extends Authenticatable
 {
     use Notifiable;
 
+
+    protected $appends = ['fullName'];
     /**
      * The attributes that are mass assignable.
      *
      * @var array
      */
     protected $fillable = [
-        'id', 'name', 'email', 'firstname', 'username', 'password', 'phonenumber', 'status', 'role', 'created_at',
+        'id', 'name', 'email', 'firstname', 'username', 'password', 'phonenumber', 'status', 'role', 'group_id', 'created_at',
         'updated_at'
     ];
 
@@ -37,6 +39,11 @@ class User extends Authenticatable
     protected $casts = [
         'email_verified_at' => 'datetime',
     ];
+
+    public function group()
+    {
+        return $this->belongsTo('App\Group');
+    }
 
     public function formatName(){
 //        $name = "";
@@ -67,4 +74,11 @@ class User extends Authenticatable
         return strtoupper($name) . " " . ucfirst($firstname);
     }
 
+    public function getAvatarAttribute(){
+        return strtoupper(substr($this->name, 0, 1)).strtoupper(substr($this->firstname, 0, 1));
+    }
+
+    public function getFullNameAttribute(){
+        return $this->name." ".$this->firstname;
+    }
 }

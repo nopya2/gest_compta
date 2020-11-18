@@ -34,7 +34,8 @@
                                 <button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">×</span></button>
                             </div>
                         @endif
-                        <engagements-list></engagements-list>
+                        <engagements-list :importer="{{ intval(Auth::user()->group->hasPermission('engagements', 'importer')) }}"
+                                :exporter="{{ intval(Auth::user()->group->hasPermission('engagements', 'exporter')) }}"></engagements-list>
                     </div>
                     <!-- /.card-body -->
                 </div>

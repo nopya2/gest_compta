@@ -14,4 +14,9 @@ class Document extends Model
     protected $fillable = [
         'id', 'filename'
     ];
+
+    public function uploads()
+    {
+        return $this->morphedByMany('App\Upload', 'documentable');
+    }
 }

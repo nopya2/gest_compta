@@ -21,69 +21,93 @@
             </a>
         </li>
         <li class="nav-item">
-            <a href="{{ route('engagement.index') }}" class="nav-link @isset($page) {{ ($page == 'engagement') ? 'active' : '' }} @endisset">
-                <i class="nav-icon fas fa-clipboard-check"></i>
-                <p>
-                    Engagements
-                    {{--<span class="right badge badge-danger">New</span>--}}
-                </p>
-            </a>
-        </li>
-        <li class="nav-item">
-            <a href="{{ route('echelon.index') }}" class="nav-link @isset($page) {{ ($page == 'echelon') ? 'active' : '' }} @endisset">
-                <i class="nav-icon fas fa-money-bill-alt"></i>
-                <p>
-                    Paiements
-                    {{--<span class="right badge badge-danger">New</span>--}}
-                </p>
-            </a>
-        </li>
-        <li class="nav-item">
-            <a href="{{ route('provider.index') }}" class="nav-link @isset($page) {{ ($page == 'provider') ? 'active' : '' }} @endisset">
+            <a href="{{ route('factures.index') }}" class="nav-link @isset($page) {{ ($page == 'facture') ? 'active' : '' }} @endisset">
                 <i class="nav-icon fas fa-shipping-fast"></i>
                 <p>
-                    Fournisseurs
+                    Factures
                     {{--<span class="right badge badge-danger">New</span>--}}
                 </p>
             </a>
         </li>
         <li class="nav-item">
-            <a href="{{ route('engagement.search') }}" class="nav-link @isset($page) {{ ($page == 'engagement.search') ? 'active' : '' }} @endisset">
-                <i class="nav-icon fas fa-search"></i>
+            <a href="{{ route('clients.index') }}" class="nav-link @isset($page) {{ ($page == 'client') ? 'active' : '' }} @endisset">
+                <i class="nav-icon fas fa-shipping-fast"></i>
                 <p>
-                    Recherche Multi-critères
+                    Clients
                     {{--<span class="right badge badge-danger">New</span>--}}
                 </p>
             </a>
         </li>
 
-        @can('isAdmin')
-        <li class="nav-header">ADMINISTRATION</li>
-        <!-- Users -->
-        <li class="nav-item has-treeview @isset($page) {{ ($page == 'user') ? 'menu-open' : '' }} @endisset">
-            <a href="#" class="nav-link @isset($page) {{ ($page == 'user') ? 'active' : '' }} @endisset">
-                <i class="nav-icon fas fa-users"></i>
-                <p>
-                    Utilisateurs
-                    <i class="right fas fa-angle-left"></i>
-                </p>
-            </a>
-            <ul class="nav nav-treeview">
-                <li class="nav-item">
-                    <a href="{{ route('user.index') }}" class="nav-link @isset($sub_page) {{ ($sub_page == 'user.list') ? 'active' : '' }} @endisset">
-                        <i class="far fa-circle nav-icon"></i>
-                        <p>Liste</p>
-                    </a>
-                </li>
-                <li class="nav-item">
-                    <a href="{{ route('user.create') }}" class="nav-link @isset($sub_page) {{ ($sub_page == 'user.create') ? 'active' : '' }} @endisset">
-                        <i class="far fa-circle nav-icon"></i>
-                        <p>Ajouter</p>
-                    </a>
-                </li>
-            </ul>
-        </li>
-        @endcan
+        @if(Auth::user()->group->hasPermission('utilisateurs', 'consulter')
+            || Auth::user()->group->hasPermission('groupes', 'consulter')
+            || Auth::user()->group->hasPermission('chapitres', 'consulter'))
+            <li class="nav-header">ADMINISTRATION</li>
+            <!-- Users -->
+            @if(Auth::user()->group->hasPermission('utilisateurs', 'consulter')
+                || Auth::user()->group->hasPermission('groupes', 'consulter'))
+            <li class="nav-item has-treeview @isset($page) {{ ($page == 'user') ? 'menu-open' : '' }} @endisset">
+                <a href="#" class="nav-link @isset($page) {{ ($page == 'user') ? 'active' : '' }} @endisset">
+                    <i class="nav-icon fas fa-users"></i>
+                    <p>
+                        Utilisateurs et Groupes
+                        <i class="right fas fa-angle-left"></i>
+                    </p>
+                </a>
+                <ul class="nav nav-treeview">
+                    @if(Auth::user()->group->hasPermission('utilisateurs', 'consulter'))
+                    <li class="nav-item">
+                        <a href="{{ route('user.index') }}" class="nav-link @isset($sub_page) {{ ($sub_page == 'user.list') ? 'active' : '' }} @endisset">
+                            <i class="far fa-circle nav-icon"></i>
+                            <p>Liste Utilisateurs</p>
+                        </a>
+                    </li>
+                    @endif
+                    @if(Auth::user()->group->hasPermission('utilisateurs', 'creer'))
+                    <li class="nav-item">
+                        <a href="{{ route('user.create') }}" class="nav-link @isset($sub_page) {{ ($sub_page == 'user.create') ? 'active' : '' }} @endisset">
+                            <i class="far fa-circle nav-icon"></i>
+                            <p>Ajouter Utilisateur</p>
+                        </a>
+                    </li>
+                    @endif
+                    @if(Auth::user()->group->hasPermission('groupes', 'consulter'))
+                    <li class="nav-item">
+                        <a href="{{ route('groups.index') }}" class="nav-link @isset($sub_page) {{ ($sub_page == 'group.list') ? 'active' : '' }} @endisset">
+                            <i class="far fa-circle nav-icon"></i>
+                            <p>Liste Groupes</p>
+                        </a>
+                    </li>
+                    @endif
+                </ul>
+            </li>
+            @endif
+            @if(Auth::user()->group->hasPermission('chapitres', 'consulter'))
+            <li class="nav-item has-treeview @isset($page) {{ ($page == 'parametre') ? 'menu-open' : '' }} @endisset">
+                <a href="#" class="nav-link @isset($page) {{ ($page == 'parametre') ? 'active' : '' }} @endisset">
+                    <i class="nav-icon fas fa-wrench"></i>
+                    <p>
+                        Paramètres
+                        <i class="right fas fa-angle-left"></i>
+                    </p>
+                </a>
+                <ul class="nav nav-treeview">
+                    <li class="nav-item">
+                        <a href="{{ route('types.index') }}" class="nav-link @isset($sub_page) {{ ($sub_page == 'type.list') ? 'active' : '' }} @endisset">
+                            <i class="far fa-circle nav-icon"></i>
+                            <p>Types de facture</p>
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="{{ route('modes_paiement.index') }}" class="nav-link @isset($sub_page) {{ ($sub_page == 'mode_paiement.list') ? 'active' : '' }} @endisset">
+                            <i class="far fa-circle nav-icon"></i>
+                            <p>Modes de paiement</p>
+                        </a>
+                    </li>
+                </ul>
+            </li>
+            @endif
+        @endif
     </ul>
 </nav>
 <!-- /.sidebar-menu -->

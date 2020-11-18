@@ -3,7 +3,7 @@
 <head>
     <meta charset="utf-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
-    <title>Gestion des données comptables | Dashboard</title>
+    <title>Gestion du recouvrement | Dashboard</title>
     <!-- Tell the browser to be responsive to screen width -->
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="csrf-token" content="{{ csrf_token() }}">
@@ -30,8 +30,16 @@
     <link rel="stylesheet" href="{{ asset('theme/admin-lte/plugins/sweetalert2-theme-bootstrap-4/bootstrap-4.min.css') }}">
     <!-- Toastr -->
     <link rel="stylesheet" href="{{ asset('theme/admin-lte/plugins/toastr/toastr.min.css') }}">
+    <!-- Ion Slider -->
+    <link rel="stylesheet" href="{{ asset('theme/admin-lte/plugins/ion-rangeslider/css/ion.rangeSlider.min.css') }}">
+    <!-- bootstrap slider -->
+    <link rel="stylesheet" href="{{ asset('theme/admin-lte/plugins/bootstrap-slider/css/bootstrap-slider.min.css') }}">
+    <!-- Bootstrap MultiSelect -->
+    <link rel="stylesheet" href="{{ asset('library/bootstrap-multiselect-master/dist/css/bootstrap-multiselect.css') }}">
     <!-- Theme style -->
     <link rel="stylesheet" href="{{ asset('theme/admin-lte/dist/css/adminlte.min.css') }}">
+    <!-- Custom style -->
+    <link rel="stylesheet" href="{{ asset('css/custom.css') }}">
     <!-- overlayScrollbars -->
     <link rel="stylesheet" href="{{ asset('theme/admin-lte/plugins/overlayScrollbars/css/OverlayScrollbars.min.css') }}">
     <!-- Daterange picker -->
@@ -178,10 +186,10 @@
     <!-- Main Sidebar Container -->
     <aside class="main-sidebar sidebar-dark-primary elevation-4">
         <!-- Brand Logo -->
-        <a href="index3.html" class="brand-link">
+        <a href="{{ route('home') }}" class="brand-link">
             <img src="{{ asset('theme/admin-lte/dist/img/AdminLTELogo.png') }}" alt="AdminLTE Logo" class="brand-image img-circle elevation-3"
                  style="opacity: .8">
-            <span class="brand-text font-weight-light">ComptaREPORT</span>
+            <span class="brand-text font-weight-light">GesRECOUV</span>
         </a>
 
         <!-- Sidebar -->
@@ -197,10 +205,10 @@
     </div>
     <!-- /.content-wrapper -->
     <footer class="main-footer">
-        <strong>Copyright &copy; 2014-2019 <a href="http://adminlte.io">AdminLTE.io</a>.</strong>
-        All rights reserved.
+        <strong>Copyright &copy; 2020-{{ (new \DateTime())->format('Y') }} <a href="http://aninf.ga">ANINF</a>.</strong>
+        Tous droits reservés.
         <div class="float-right d-none d-sm-inline-block">
-            <b>Version</b> 3.0.2
+            <b>Version</b> 1.0.0
         </div>
     </footer>
 
@@ -256,6 +264,12 @@
 <script src="{{ asset('theme/admin-lte/plugins/bootstrap-colorpicker/js/bootstrap-colorpicker.min.js') }}"></script>
 <!-- Bootstrap Switch -->
 <script src="{{ asset('theme/admin-lte/plugins/bootstrap-switch/js/bootstrap-switch.min.js') }}"></script>
+<!-- Ion Slider -->
+<script src="{{ asset('theme/admin-lte/plugins/ion-rangeslider/js/ion.rangeSlider.min.js') }}"></script>
+<!-- Bootstrap slider -->
+<script src="{{ asset('theme/admin-lte/plugins/bootstrap-slider/bootstrap-slider.min.js') }}"></script>
+<!-- Bootstrap MultiSelect -->
+<script src="{{ asset('library/bootstrap-multiselect-master/dist/js/bootstrap-multiselect.js') }}"></script>
 <!-- AdminLTE App -->
 <script src="{{ asset('theme/admin-lte/dist/js/adminlte.js') }}"></script>
 <!-- AdminLTE dashboard demo (This is only for demo purposes) -->

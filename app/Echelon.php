@@ -12,7 +12,12 @@ class Echelon extends Model
      * @var array
      */
     protected $fillable = [
-        'id', 'engagement_id', 'user_id', 'n_engage', 'm_paye', 'date_paiement', 'comment', 'date_depot_ac', 'created_at', 'updated_at'
+        'id', 'etat', 'engagement_id', 'user_id', 'n_engage', 'n_ordonnance', 'm_paye', 'date_paiement', 'comment', 'date_depot_ac', 'created_at', 'updated_at'
+    ];
+
+    protected $casts = [
+        'etat' => 'string',
+        'date_paiement' => 'datetime'
     ];
 
     public function user()

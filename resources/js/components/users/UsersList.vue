@@ -38,7 +38,7 @@
                             <th>Prenom</th>
                             <th>Nom d'utilisateur</th>
                             <th>E-mail</th>
-                            <th>Role</th>
+                            <th>Groupe</th>
                             <th>Statut</th>
                             <th></th>
                         </tr>
@@ -50,7 +50,7 @@
                             <td>{{ user.firstname }}</td>
                             <td>{{ user.username }}</td>
                             <td>{{ user.email }}</td>
-                            <td>{{ user.role }}</td>
+                            <td>{{ user.group.name }}</td>
                             <td class="text-center">
                                 <div class="form-group">
                                     <div class="custom-control custom-checkbox">
@@ -84,7 +84,7 @@
                         <th>Prenom</th>
                         <th>Nom d'utilisateur</th>
                         <th>E-mail</th>
-                        <th>Role</th>
+                        <th>Groupe</th>
                         <th>Statut</th>
                         <th></th>
                     </tr>

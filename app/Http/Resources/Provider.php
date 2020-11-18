@@ -15,7 +15,12 @@ class Provider extends JsonResource
     public function toArray($request)
     {
         return [
-            'name' => $this->name
+            'name' => $this->name,
+            'nif' => $this->nif,
+            'code_nif' => $this->code_nif,
+            'mt_engage' => $this->mt_engage,
+            'mt_paye' => $this->mt_paye,
+            'solde' => $this->solde,
         ];
     }
 }

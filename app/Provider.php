@@ -12,6 +12,6 @@ class Provider extends Model
      * @var array
      */
     protected $fillable = [
-        'name'
+        'name', 'nif', 'code_nif', 'mt_engage', 'mt_paye', 'solde'
     ];
 }
